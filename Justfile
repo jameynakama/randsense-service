@@ -1,4 +1,4 @@
-set dotenv-load := true
+set dotenv-load
 
 alias mu := migrate-up
 alias md := migrate-down
@@ -15,7 +15,7 @@ run:
 
 # Build binary
 build:
-    go build -o bin/APPNAME ./cmd/server
+    go build -o bin/randsense ./cmd/server
 
 # Run pending migrations
 migrate-up:
