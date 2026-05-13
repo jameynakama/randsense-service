@@ -30,14 +30,6 @@ func NewRouter(cfg RouterConfig) http.Handler {
 
 	r.Get("/health", h.healthCheck)
 
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Get("/users", h.listUsers)
-		r.Post("/users", h.createUser)
-		r.Get("/users/{id}", h.getUser)
-		r.Put("/users/{id}", h.updateUser)
-		r.Delete("/users/{id}", h.deleteUser)
-	})
-
 	return r
 }
 

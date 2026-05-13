@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS conjunctions;
+DROP TABLE IF EXISTS pronouns;
+DROP TABLE IF EXISTS prepositions;
+DROP TABLE IF EXISTS determiners;
