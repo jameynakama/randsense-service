@@ -7,11 +7,17 @@ default: test
 
 # Run all tests
 test args="":
-    go test {{ args }} ./...
+    gotestsum ./... -- {{ args }}
 
-# Start the dev server
+gotest args="":
+    go test ./... {{ args }}
+
+cover:
+    go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+
+# Start the dev server with hot reload
 run:
-    go run ./cmd/server
+    air
 
 # Build binary
 build:
@@ -22,8 +28,8 @@ migrate-up:
     migrate -path migrations -database "$DATABASE_URL" up
 
 # Roll back one migration
-migrate-down:
-    migrate -path migrations -database "$DATABASE_URL" down 1
+migrate-down num="1":
+    migrate -path migrations -database "$DATABASE_URL" down {{ num }}
 
 # Regenerate sqlc types after query changes
 generate:
