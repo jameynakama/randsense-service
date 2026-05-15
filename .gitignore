@@ -3,3 +3,5 @@ bin/
 coverage.out
 
 .claude/settings.local.json
+
+data/**/*.xml

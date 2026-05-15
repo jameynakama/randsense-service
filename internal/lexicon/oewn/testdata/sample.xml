@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE LexicalResource SYSTEM "http://globalwordnet.github.io/schemas/WN-LMF-1.3.dtd">
+<LexicalResource xmlns:dc="https://globalwordnet.github.io/schemas/dc/">
+  <Lexicon id="oewn"
+           label="Open English Wordnet (randsense test fixture)"
+           language="en"
+           email="x@y"
+           license="https://creativecommons.org/licenses/by/4.0"
+           version="2025-sample">
+
+    <!-- noun with irregular plural: Form populated -->
+    <LexicalEntry id="oewn-goose-n">
+      <Lemma writtenForm="goose" partOfSpeech="n">
+        <Pronunciation>ˈɡuːs</Pronunciation>
+      </Lemma>
+      <Form writtenForm="geese"/>
+      <Sense id="oewn-goose__1.05.00.." synset="oewn-01858313-n"/>
+    </LexicalEntry>
+
+    <!-- regular noun: no Form -->
+    <LexicalEntry id="oewn-shrimp-n">
+      <Lemma writtenForm="shrimp" partOfSpeech="n"/>
+      <Sense id="oewn-shrimp__1.05.00.." synset="oewn-02314320-n"/>
+    </LexicalEntry>
+
+    <!-- proper noun: case preserved -->
+    <LexicalEntry id="oewn-microsoft-n">
+      <Lemma writtenForm="Microsoft" partOfSpeech="n"/>
+      <Sense id="oewn-microsoft__1.18.00.." synset="oewn-08810000-n"/>
+    </LexicalEntry>
+
+    <!-- multi-word noun with internal space -->
+    <LexicalEntry id="oewn-sea_anemone-n">
+      <Lemma writtenForm="sea anemone" partOfSpeech="n"/>
+      <Sense id="oewn-sea_anemone__1.05.00.." synset="oewn-02316707-n"/>
+    </LexicalEntry>
+
+    <!-- leading-apostrophe lemma: will be filtered at ingest, parser
+         must still emit it cleanly -->
+    <LexicalEntry id="oewn--ap-hood-n">
+      <Lemma writtenForm="&apos;hood" partOfSpeech="n"/>
+      <Sense id="oewn--apos-hood__1.14.01.." synset="oewn-08242255-n"/>
+    </LexicalEntry>
+
+    <!-- transitive verb, single sense, two subcat codes -->
+    <LexicalEntry id="oewn-devour-v">
+      <Lemma writtenForm="devour" partOfSpeech="v"/>
+      <Sense id="oewn-devour__2.34.00.." subcat="vtaa vtai" synset="oewn-01172275-v"/>
+    </LexicalEntry>
+
+    <!-- intransitive verb, single subcat code -->
+    <LexicalEntry id="oewn-sleep-v">
+      <Lemma writtenForm="sleep" partOfSpeech="v"/>
+      <Sense id="oewn-sleep__2.29.00.." subcat="vita" synset="oewn-00018651-v"/>
+    </LexicalEntry>
+
+    <!-- verb with multiple senses and overlapping subcat codes
+         (parser must dedupe; expected Frames is ["vtaa","vtai"]) -->
+    <LexicalEntry id="oewn-goose-v">
+      <Lemma writtenForm="goose" partOfSpeech="v">
+        <Pronunciation>ˈɡuːs</Pronunciation>
+      </Lemma>
+      <Sense id="oewn-goose__2.35.00.." subcat="vtaa vtai" synset="oewn-01459708-v"/>
+      <Sense id="oewn-goose__2.35.02.." subcat="vtaa" synset="oewn-01233625-v"/>
+    </LexicalEntry>
+
+    <!-- verb with no subcat attribute on its sense -->
+    <LexicalEntry id="oewn-loiter-v">
+      <Lemma writtenForm="loiter" partOfSpeech="v"/>
+      <Sense id="oewn-loiter__2.38.00.." synset="oewn-02061425-v"/>
+    </LexicalEntry>
+
+    <!-- adjective head (a) with no Form; better/best are NOT here,
+         they live in their own separate LexicalEntry -->
+    <LexicalEntry id="oewn-good-a">
+      <Lemma writtenForm="good" partOfSpeech="a"/>
+      <Sense id="oewn-good__3.00.00.." synset="oewn-00231927-a"/>
+    </LexicalEntry>
+
+    <!-- adjective satellite (s): parser must NOT collapse to "a";
+         ingest is the layer that maps both into the adjectives table -->
+    <LexicalEntry id="oewn-effervescent-s">
+      <Lemma writtenForm="effervescent" partOfSpeech="s"/>
+      <Sense id="oewn-effervescent__5.00.00.." synset="oewn-02212345-s"/>
+    </LexicalEntry>
+
+    <!-- adverb (r) -->
+    <LexicalEntry id="oewn-curly-r">
+      <Lemma writtenForm="curly" partOfSpeech="r"/>
+      <Sense id="oewn-curly__4.02.00.." synset="oewn-00120000-r"/>
+    </LexicalEntry>
+
+    <!-- lemma containing an apostrophe entity (must decode to o'clock) -->
+    <LexicalEntry id="oewn-oclock-r">
+      <Lemma writtenForm="o&apos;clock" partOfSpeech="r"/>
+      <Sense id="oewn-oclock__4.02.00.." synset="oewn-00010000-r"/>
+    </LexicalEntry>
+
+  </Lexicon>
+</LexicalResource>
