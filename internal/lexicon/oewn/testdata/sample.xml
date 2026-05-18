@@ -35,11 +35,16 @@
       <Sense id="oewn-sea_anemone__1.05.00.." synset="oewn-02316707-n"/>
     </LexicalEntry>
 
-    <!-- leading-apostrophe lemma: will be filtered at ingest, parser
-         must still emit it cleanly -->
+    <!-- leading-apostrophe lemma -->
     <LexicalEntry id="oewn--ap-hood-n">
       <Lemma writtenForm="&apos;hood" partOfSpeech="n"/>
       <Sense id="oewn--apos-hood__1.14.01.." synset="oewn-08242255-n"/>
+    </LexicalEntry>
+
+    <!-- dot and numbers, will be rejected by AllowLemma -->
+    <LexicalEntry id="oewn-twenty-two_caliber-n">
+      <Lemma writtenForm=".22-caliber" partOfSpeech="n"/>
+      <Sense id="oewn-twenty-two_caliber__1.06.00.." synset="oewn-04510284-n"/>
     </LexicalEntry>
 
     <!-- transitive verb, single sense, two subcat codes -->

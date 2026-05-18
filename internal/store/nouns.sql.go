@@ -20,6 +20,30 @@ func (q *Queries) CountNouns(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const getNounByLemma = `-- name: GetNounByLemma :one
+SELECT id, lemma, inflections, source, source_id, register, frequency, active, vote_count, create_time, update_time FROM nouns
+WHERE lemma = $1
+`
+
+func (q *Queries) GetNounByLemma(ctx context.Context, lemma string) (Noun, error) {
+	row := q.db.QueryRow(ctx, getNounByLemma, lemma)
+	var i Noun
+	err := row.Scan(
+		&i.ID,
+		&i.Lemma,
+		&i.Inflections,
+		&i.Source,
+		&i.SourceID,
+		&i.Register,
+		&i.Frequency,
+		&i.Active,
+		&i.VoteCount,
+		&i.CreateTime,
+		&i.UpdateTime,
+	)
+	return i, err
+}
+
 const getRandomNoun = `-- name: GetRandomNoun :one
 SELECT id, lemma, inflections, source, source_id, register, frequency, active, vote_count, create_time, update_time FROM nouns
 WHERE active

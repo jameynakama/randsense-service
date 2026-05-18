@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CountNouns(ctx context.Context) (int64, error)
+	GetNounByLemma(ctx context.Context, lemma string) (Noun, error)
 	GetRandomNoun(ctx context.Context) (Noun, error)
 	InsertNoun(ctx context.Context, arg InsertNounParams) error
 	TruncateNouns(ctx context.Context) error

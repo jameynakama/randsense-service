@@ -1,4 +1,4 @@
-package api_test
+package oewn_test
 
 import (
 	"context"
@@ -16,6 +16,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// testPool is the package-wide pool against a freshly-created and
+// migrated test database. Created in TestMain, torn down at exit.
 var testPool *pgxpool.Pool
 
 func getRequiredEnvVar(key string) string {
@@ -44,15 +46,14 @@ func TestMain(m *testing.M) {
 	ctx := context.Background()
 
 	pgDB := getDBConn(ctx, swapDBName(testDBURL, "postgres"))
-	if _, err := pgDB.Exec(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", testDBName)); err != nil {
-		log.Fatalf("could not drop existing test database: %v", err)
-	}
+	pgDB.Exec(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", testDBName))
 	if _, err := pgDB.Exec(ctx, fmt.Sprintf("CREATE DATABASE %s", testDBName)); err != nil {
-		log.Fatalf("could not create test database: %v", err)
+		log.Fatal("could not create test database")
 	}
 
 	migrateURL := strings.Replace(testDBURL, "postgres://", "pgx5://", 1)
-	mig, err := migrate.New("file://../../migrations", migrateURL)
+	// Three levels up from internal/lexicon/oewn -> repo root -> migrations.
+	mig, err := migrate.New("file://../../../migrations", migrateURL)
 	if err != nil {
 		log.Fatalf("could not create migrate instance: %v", err)
 	}
@@ -65,7 +66,6 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	testPool.Close()
-	// Postgres refuses to drop a DB with active connections -- force evictions first
 	pgDB.Exec(ctx, `
 		SELECT pg_terminate_backend(pid)
 		FROM pg_stat_activity
@@ -86,17 +86,4 @@ func swapDBName(oldDB, newDB string) string {
 	u, _ := url.Parse(oldDB)
 	u.Path = "/" + newDB
 	return u.String()
-}
-
-func TestSwapDBName(t *testing.T) {
-	expected := "pg://hello:moto@some.place/woof?one=1&two=2"
-	if r := swapDBName("pg://hello:moto@some.place/meow?one=1&two=2", "woof"); r != expected {
-		t.Errorf("wanted %s but got %s", expected, r)
-	}
-}
-
-func TestGetDBName(t *testing.T) {
-	if r := getDBName("pg://hello:moto@some.place/woof?one=1&two=2"); r != "woof" {
-		t.Errorf("wanted woof but got %s", r)
-	}
 }

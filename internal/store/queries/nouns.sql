@@ -9,6 +9,10 @@ TRUNCATE nouns RESTART IDENTITY CASCADE;
 -- name: CountNouns :one
 SELECT COUNT(*) FROM nouns;
 
+-- name: GetNounByLemma :one
+SELECT * FROM nouns
+WHERE lemma = $1;
+
 -- name: GetRandomNoun :one
 SELECT * FROM nouns
 WHERE active
