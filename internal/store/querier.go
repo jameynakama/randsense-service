@@ -4,6 +4,15 @@
 
 package store
 
-type Querier interface{}
+import (
+	"context"
+)
+
+type Querier interface {
+	CountNouns(ctx context.Context) (int64, error)
+	GetRandomNoun(ctx context.Context) (Noun, error)
+	InsertNoun(ctx context.Context, arg InsertNounParams) error
+	TruncateNouns(ctx context.Context) error
+}
 
 var _ Querier = (*Queries)(nil)

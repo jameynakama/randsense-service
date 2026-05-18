@@ -3,3 +3,103 @@
 //   sqlc v1.31.1
 
 package store
+
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type Adjective struct {
+	ID          int64              `db:"id" json:"id"`
+	Lemma       string             `db:"lemma" json:"lemma"`
+	Inflections []byte             `db:"inflections" json:"inflections"`
+	Source      string             `db:"source" json:"source"`
+	SourceID    pgtype.Text        `db:"source_id" json:"source_id"`
+	Register    pgtype.Text        `db:"register" json:"register"`
+	Frequency   pgtype.Numeric     `db:"frequency" json:"frequency"`
+	Active      bool               `db:"active" json:"active"`
+	VoteCount   int32              `db:"vote_count" json:"vote_count"`
+	CreateTime  pgtype.Timestamptz `db:"create_time" json:"create_time"`
+	UpdateTime  pgtype.Timestamptz `db:"update_time" json:"update_time"`
+}
+
+type Adverb struct {
+	ID          int64              `db:"id" json:"id"`
+	Lemma       string             `db:"lemma" json:"lemma"`
+	Inflections []byte             `db:"inflections" json:"inflections"`
+	Source      string             `db:"source" json:"source"`
+	SourceID    pgtype.Text        `db:"source_id" json:"source_id"`
+	Register    pgtype.Text        `db:"register" json:"register"`
+	Frequency   pgtype.Numeric     `db:"frequency" json:"frequency"`
+	Active      bool               `db:"active" json:"active"`
+	VoteCount   int32              `db:"vote_count" json:"vote_count"`
+	CreateTime  pgtype.Timestamptz `db:"create_time" json:"create_time"`
+	UpdateTime  pgtype.Timestamptz `db:"update_time" json:"update_time"`
+}
+
+type Conjunction struct {
+	ID     int64  `db:"id" json:"id"`
+	Lemma  string `db:"lemma" json:"lemma"`
+	Type   string `db:"type" json:"type"`
+	Active bool   `db:"active" json:"active"`
+}
+
+type Determiner struct {
+	ID     int64  `db:"id" json:"id"`
+	Lemma  string `db:"lemma" json:"lemma"`
+	Type   string `db:"type" json:"type"`
+	Number string `db:"number" json:"number"`
+	Active bool   `db:"active" json:"active"`
+}
+
+type Noun struct {
+	ID          int64              `db:"id" json:"id"`
+	Lemma       string             `db:"lemma" json:"lemma"`
+	Inflections []byte             `db:"inflections" json:"inflections"`
+	Source      string             `db:"source" json:"source"`
+	SourceID    pgtype.Text        `db:"source_id" json:"source_id"`
+	Register    pgtype.Text        `db:"register" json:"register"`
+	Frequency   pgtype.Numeric     `db:"frequency" json:"frequency"`
+	Active      bool               `db:"active" json:"active"`
+	VoteCount   int32              `db:"vote_count" json:"vote_count"`
+	CreateTime  pgtype.Timestamptz `db:"create_time" json:"create_time"`
+	UpdateTime  pgtype.Timestamptz `db:"update_time" json:"update_time"`
+}
+
+type Preposition struct {
+	ID     int64  `db:"id" json:"id"`
+	Lemma  string `db:"lemma" json:"lemma"`
+	Active bool   `db:"active" json:"active"`
+}
+
+type Pronoun struct {
+	ID     int64  `db:"id" json:"id"`
+	Lemma  string `db:"lemma" json:"lemma"`
+	Case   string `db:"case_" json:"case_"`
+	Person int16  `db:"person" json:"person"`
+	Number string `db:"number" json:"number"`
+	Gender string `db:"gender" json:"gender"`
+	Active bool   `db:"active" json:"active"`
+}
+
+type User struct {
+	ID         int64              `db:"id" json:"id"`
+	Username   string             `db:"username" json:"username"`
+	IsAdmin    bool               `db:"is_admin" json:"is_admin"`
+	CreateTime pgtype.Timestamptz `db:"create_time" json:"create_time"`
+	UpdateTime pgtype.Timestamptz `db:"update_time" json:"update_time"`
+}
+
+type Verb struct {
+	ID          int64              `db:"id" json:"id"`
+	Lemma       string             `db:"lemma" json:"lemma"`
+	Inflections []byte             `db:"inflections" json:"inflections"`
+	Frames      []byte             `db:"frames" json:"frames"`
+	Source      string             `db:"source" json:"source"`
+	SourceID    pgtype.Text        `db:"source_id" json:"source_id"`
+	Register    pgtype.Text        `db:"register" json:"register"`
+	Frequency   pgtype.Numeric     `db:"frequency" json:"frequency"`
+	Active      bool               `db:"active" json:"active"`
+	VoteCount   int32              `db:"vote_count" json:"vote_count"`
+	CreateTime  pgtype.Timestamptz `db:"create_time" json:"create_time"`
+	UpdateTime  pgtype.Timestamptz `db:"update_time" json:"update_time"`
+}
