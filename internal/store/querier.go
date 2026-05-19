@@ -9,11 +9,26 @@ import (
 )
 
 type Querier interface {
+	CountAdjectives(ctx context.Context) (int64, error)
+	CountAdverbs(ctx context.Context) (int64, error)
 	CountNouns(ctx context.Context) (int64, error)
+	CountVerbs(ctx context.Context) (int64, error)
+	GetAdjectiveByLemma(ctx context.Context, lemma string) (Adjective, error)
+	GetAdverbByLemma(ctx context.Context, lemma string) (Adverb, error)
 	GetNounByLemma(ctx context.Context, lemma string) (Noun, error)
+	GetRandomAdjective(ctx context.Context) (Adjective, error)
+	GetRandomAdverb(ctx context.Context) (Adverb, error)
 	GetRandomNoun(ctx context.Context) (Noun, error)
+	GetRandomVerb(ctx context.Context) (Verb, error)
+	GetVerbByLemma(ctx context.Context, lemma string) (Verb, error)
+	InsertAdjective(ctx context.Context, arg InsertAdjectiveParams) error
+	InsertAdverb(ctx context.Context, arg InsertAdverbParams) error
 	InsertNoun(ctx context.Context, arg InsertNounParams) error
+	InsertVerb(ctx context.Context, arg InsertVerbParams) error
+	TruncateAdjectives(ctx context.Context) error
+	TruncateAdverbs(ctx context.Context) error
 	TruncateNouns(ctx context.Context) error
+	TruncateVerbs(ctx context.Context) error
 }
 
 var _ Querier = (*Queries)(nil)

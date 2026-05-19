@@ -47,10 +47,19 @@ func Ingest(ctx context.Context, pool *pgxpool.Pool, r io.Reader) (Stats, error)
 
 	q := store.New(tx)
 
-	// TODO: Add other word types as they are implemented
-	err = q.TruncateNouns(ctx)
-	if err != nil {
-		return stats, fmt.Errorf("Ingest, TruncateNouns: %v", err)
+	for _, tr := range []struct {
+		kind string
+		op   func(context.Context) error
+	}{
+		{"Nouns", q.TruncateNouns},
+		{"Verbs", q.TruncateVerbs},
+		{"Adjectives", q.TruncateAdjectives},
+		{"Adverbs", q.TruncateAdverbs},
+	} {
+		err := tr.op(ctx)
+		if err != nil {
+			return stats, fmt.Errorf("Ingest, Truncate%s: %v", tr.kind, err)
+		}
 	}
 
 	err = Parse(r, func(e Entry) error {
@@ -63,9 +72,8 @@ func Ingest(ctx context.Context, pool *pgxpool.Pool, r io.Reader) (Stats, error)
 	return stats, tx.Commit(ctx)
 }
 
-// ingestEntry routes a single Entry to its table. POS codes we don't yet
-// handle (verb, adjective, satellite, adverb) increment Skipped; 2d will
-// flesh out those branches.
+// ingestEntry routes a single Entry to its table. Unknown POS codes increment
+// Skipped; lemmas that fail AllowLemma are also Skipped.
 func ingestEntry(ctx context.Context, q *store.Queries, e Entry, stats *Stats) error {
 	if !AllowLemma(e.Lemma) {
 		stats.Skipped++
@@ -87,9 +95,41 @@ func ingestEntry(ctx context.Context, q *store.Queries, e Entry, stats *Stats) e
 			return err
 		}
 		stats.Nouns++
-	case "v", "a", "s", "r":
-		// TODO: Handled in sub-slice 2d.
-		stats.Skipped++
+	case "v":
+		frames, err := verbFramesJSON(e.Frames)
+		if err != nil {
+			return err
+		}
+		err = q.InsertVerb(ctx, store.InsertVerbParams{
+			Lemma:       e.Lemma,
+			Inflections: []byte("{}"),
+			Frames:      frames,
+			Source:      SourceName,
+		})
+		if err != nil {
+			return err
+		}
+		stats.Verbs++
+	case "a", "s":
+		err := q.InsertAdjective(ctx, store.InsertAdjectiveParams{
+			Lemma:       e.Lemma,
+			Inflections: []byte("{}"),
+			Source:      SourceName,
+		})
+		if err != nil {
+			return err
+		}
+		stats.Adjectives++
+	case "r":
+		err := q.InsertAdverb(ctx, store.InsertAdverbParams{
+			Lemma:       e.Lemma,
+			Inflections: []byte("{}"),
+			Source:      SourceName,
+		})
+		if err != nil {
+			return err
+		}
+		stats.Adverbs++
 	default:
 		// Anything else (proper-name codes, unknowns) gets skipped.
 		stats.Skipped++
@@ -109,4 +149,11 @@ func nounInflectionsJSON(forms []string) ([]byte, error) {
 		return []byte("{}"), nil
 	}
 	return json.Marshal(map[string]string{"plural": forms[0]})
+}
+
+func verbFramesJSON(frames []string) ([]byte, error) {
+	if len(frames) == 0 {
+		return []byte("[]"), nil
+	}
+	return json.Marshal(frames)
 }

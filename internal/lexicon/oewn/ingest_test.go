@@ -13,8 +13,8 @@ import (
 
 // TestIngest is an integration test: it runs the real Ingest pipeline
 // against the testdata/sample.xml fixture and checks the resulting DB
-// state. The fixture has 14 LexicalEntries: 5 nouns pass AllowLemma,
-// 1 noun (.22-caliber) is filtered, 8 verbs/adj/adv are Skipped until 2d.
+// state. 14 LexicalEntries total: 5 nouns, 4 verbs, 2 adjectives, 2 adverbs
+// all pass AllowLemma; 1 noun (.22-caliber) is filtered into Skipped.
 func TestIngest(t *testing.T) {
 	ctx := context.Background()
 
@@ -26,51 +26,139 @@ func TestIngest(t *testing.T) {
 
 	stats, err := oewn.Ingest(ctx, testPool, f)
 	if err != nil {
-		t.Fatalf("Ingest: %v", err)
+		t.Fatalf("Ingest: %#v %v", stats, err)
 	}
 
-	wantNouns := 5
-	wantSkipped := 14 - wantNouns
-
-	if stats.Nouns != wantNouns {
-		t.Errorf("Stats.Nouns: got %d, want %d", stats.Nouns, wantNouns)
-	}
-	if stats.Skipped != wantSkipped {
-		t.Errorf("Stats.Skipped: got %d, want %d", stats.Skipped, wantSkipped)
-	}
-
-	// Spot-check the database state via the generated count query.
 	q := store.New(testPool)
-	count, err := q.CountNouns(ctx)
-	if err != nil {
-		t.Fatalf("CountNouns: %v", err)
-	}
-	if count != int64(wantNouns) {
-		t.Errorf("CountNouns: got %d, want %d", count, wantNouns)
-	}
 
-	word, err := q.GetNounByLemma(ctx, "goose")
-	if err != nil {
-		t.Fatalf("GetNounByLemma: %v", err)
-	}
-	var infl map[string]string
-	err = json.Unmarshal(word.Inflections, &infl)
-	if err != nil {
-		t.Fatalf("json.Unmarshal: %v", err)
-	}
-	v, ok := infl["plural"]
-	if !ok {
-		t.Errorf("Plural: could not find plural inflection for %s", word.Lemma)
-	}
-	if v != "geese" {
-		t.Errorf("Plural: got %s; want %s", v, "geese")
-	}
+	t.Run("stats", func(t *testing.T) {
+		if stats.Nouns != 5 {
+			t.Errorf("Nouns: got %d, want 5", stats.Nouns)
+		}
+		if stats.Verbs != 4 {
+			t.Errorf("Verbs: got %d, want 4", stats.Verbs)
+		}
+		if stats.Adjectives != 2 {
+			t.Errorf("Adjectives: got %d, want 2", stats.Adjectives)
+		}
+		if stats.Adverbs != 2 {
+			t.Errorf("Adverbs: got %d, want 2", stats.Adverbs)
+		}
+		if stats.Skipped != 1 {
+			t.Errorf("Skipped: got %d, want 1", stats.Skipped)
+		}
+	})
 
-	word, err = q.GetNounByLemma(ctx, "Microsoft")
-	if err != nil {
-		t.Fatalf("Microsoft, error fetching: %v", err)
-	}
-	if word.Lemma != "Microsoft" {
-		t.Errorf("CapitalTest: got %s; want %s", word.Lemma, "Microsoft")
-	}
+	t.Run("nouns", func(t *testing.T) {
+		count, err := q.CountNouns(ctx)
+		if err != nil {
+			t.Fatalf("CountNouns: %v", err)
+		}
+		if count != 5 {
+			t.Errorf("CountNouns: got %d, want 5", count)
+		}
+
+		// irregular plural
+		noun, err := q.GetNounByLemma(ctx, "goose")
+		if err != nil {
+			t.Fatalf("GetNounByLemma(goose): %v", err)
+		}
+		var infl map[string]string
+		if err := json.Unmarshal(noun.Inflections, &infl); err != nil {
+			t.Fatalf("json.Unmarshal(noun.Inflections): %v", err)
+		}
+		if infl["plural"] != "geese" {
+			t.Errorf("goose plural: got %q, want %q", infl["plural"], "geese")
+		}
+
+		// proper noun: case preserved
+		noun, err = q.GetNounByLemma(ctx, "Microsoft")
+		if err != nil {
+			t.Fatalf("GetNounByLemma(Microsoft): %v", err)
+		}
+		if noun.Lemma != "Microsoft" {
+			t.Errorf("proper noun lemma: got %q, want %q", noun.Lemma, "Microsoft")
+		}
+	})
+
+	t.Run("verbs", func(t *testing.T) {
+		count, err := q.CountVerbs(ctx)
+		if err != nil {
+			t.Fatalf("CountVerbs: %v", err)
+		}
+		if count != 4 {
+			t.Errorf("CountVerbs: got %d, want 4", count)
+		}
+
+		// two subcat codes, deduped across senses
+		verb, err := q.GetVerbByLemma(ctx, "devour")
+		if err != nil {
+			t.Fatalf("GetVerbByLemma(devour): %v", err)
+		}
+		var frames []string
+		if err := json.Unmarshal(verb.Frames, &frames); err != nil {
+			t.Fatalf("json.Unmarshal(devour.Frames): %v", err)
+		}
+		wantFrames := []string{"vtaa", "vtai"}
+		if len(frames) != len(wantFrames) {
+			t.Errorf("devour frames: got %v, want %v", frames, wantFrames)
+		} else {
+			for i, f := range wantFrames {
+				if frames[i] != f {
+					t.Errorf("devour frames[%d]: got %q, want %q", i, frames[i], f)
+				}
+			}
+		}
+
+		// no subcat attribute: frames must be empty array, not null
+		verb, err = q.GetVerbByLemma(ctx, "loiter")
+		if err != nil {
+			t.Fatalf("GetVerbByLemma(loiter): %v", err)
+		}
+		var loiterFrames []string
+		if err := json.Unmarshal(verb.Frames, &loiterFrames); err != nil {
+			t.Fatalf("json.Unmarshal(loiter.Frames): %v", err)
+		}
+		if len(loiterFrames) != 0 {
+			t.Errorf("loiter frames: got %v, want empty", loiterFrames)
+		}
+	})
+
+	t.Run("adjectives", func(t *testing.T) {
+		count, err := q.CountAdjectives(ctx)
+		if err != nil {
+			t.Fatalf("CountAdjectives: %v", err)
+		}
+		if count != 2 {
+			t.Errorf("CountAdjectives: got %d, want 2", count)
+		}
+
+		// POS 's' (satellite adjective) must land in adjectives table
+		adj, err := q.GetAdjectiveByLemma(ctx, "effervescent")
+		if err != nil {
+			t.Fatalf("GetAdjectiveByLemma(effervescent): %v", err)
+		}
+		if adj.Lemma != "effervescent" {
+			t.Errorf("adjective lemma: got %q, want %q", adj.Lemma, "effervescent")
+		}
+	})
+
+	t.Run("adverbs", func(t *testing.T) {
+		count, err := q.CountAdverbs(ctx)
+		if err != nil {
+			t.Fatalf("CountAdverbs: %v", err)
+		}
+		if count != 2 {
+			t.Errorf("CountAdverbs: got %d, want 2", count)
+		}
+
+		// apostrophe entity decoded correctly
+		adv, err := q.GetAdverbByLemma(ctx, "o'clock")
+		if err != nil {
+			t.Fatalf("GetAdverbByLemma(o'clock): %v", err)
+		}
+		if adv.Lemma != "o'clock" {
+			t.Errorf("adverb lemma: got %q, want %q", adv.Lemma, "o'clock")
+		}
+	})
 }
